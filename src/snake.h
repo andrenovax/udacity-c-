@@ -2,6 +2,7 @@
 #define SNAKE_H
 
 #include <vector>
+#include <array>
 #include "SDL.h"
 
 class Snake {
@@ -18,6 +19,8 @@ class Snake {
 
   void GrowBody();
   bool SnakeCell(int x, int y);
+  bool SnakeCell(std::array<int, 2> xy);
+  void Cut(std::array<int, 2> xy);
 
   Direction direction = Direction::kUp;
 

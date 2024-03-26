@@ -1,6 +1,6 @@
 #include "snake.h"
 #include <cmath>
-#include <iostream>
+#include <array>
 
 void Snake::Update() {
   SDL_Point prev_cell{
@@ -43,7 +43,8 @@ void Snake::UpdateHead() {
   head_y = fmod(head_y + grid_height, grid_height);
 }
 
-void Snake::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cell) {
+void Snake::UpdateBody(SDL_Point &current_head_cell,
+                       SDL_Point &prev_head_cell) {
   // Add previous head location to vector
   body.push_back(prev_head_cell);
 
@@ -76,4 +77,14 @@ bool Snake::SnakeCell(int x, int y) {
     }
   }
   return false;
+}
+
+bool Snake::SnakeCell(std::array<int, 2> xy) { return Snake::SnakeCell(xy[0], xy[1]); }
+
+void Snake::Cut(std::array<int, 2> xy) {
+  auto item = std::find_if(body.begin(), body.end(), [xy](const auto &item) {
+    return item.x == xy[0] && item.y == xy[1];
+  });
+
+  body.erase(item, body.end());
 }
