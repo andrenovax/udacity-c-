@@ -11,28 +11,55 @@ using std::vector;
 
 class Grid {
  public:
+  struct Node {
+    enum class State { kEmpty, kObstacle, kPath };
+
+    int x, y, g = 0, h = std::numeric_limits<int>::max();
+
+    State state = State::kEmpty;
+    Node* parent = nullptr;
+
+    Node(int x, int y): x{x}, y{y} {}
+
+    bool operator>(Node const& node) const;
+    bool operator<(Node const& node) const;
+
+    bool IsEmpty() const;
+    int Distance(Node* node) const;
+    int FValue() const;
+  };
+
+
   Grid(int width, int height);
 
-  // getters
-  bool IsEmpty(int x, int y) const;
-  int Width() const;
-  int Height() const;
+  // Getters
+  bool IsEmpty(int x, int y);
 
-  // mutations
+  Node* GetNode(int x, int y);
+  Node* GetNode(SDL_Point &point);
+  Node* GetNeighbourNode(Node &node, int neighbour);
+  std::vector<Grid::Node*> GetNeighbourNodes(Grid::Node &node);
+
+  // Setters
   void AddObstacle(int x, int y);
   void AddObstacle(SDL_Point &point);
   void AddObstacle(vector<SDL_Point> &points);
+
   void ReplaceObstacles(vector<SDL_Point> &old_points,
                         vector<SDL_Point> &new_points);
-  void Close(int x, int y);
 
  private:
-  enum class GridNodeState { kEmpty, kObstacle, kClosed };
+  vector<vector<Node>> _nodes;
 
-  vector<vector<GridNodeState>> _nodes;
+  static constexpr int NODE_NEIGHBOUR_DELTA[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 
-  void Clear(SDL_Point &point);
-  void Clear(vector<SDL_Point> &points);
+  // Getters
+  int Width() const;
+  int Height() const;
+
+  // Setters
+  void Reset(SDL_Point &point);
+  void Reset(vector<SDL_Point> &points);
 };
 
 #endif
