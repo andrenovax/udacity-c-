@@ -7,12 +7,64 @@
 using std::abs;
 using std::vector;
 
-Grid::Grid(int width, int height) {
-  for (int y : std::views::iota(0, height)) {
-    for (int x : std::views::iota(0, width)) {
-      _nodes[y][x] = {x, y};
+Grid::Grid(int width, int height) : _nodes(height) {
+  for (int y = 0; y < height; ++y) {
+    _nodes[y].reserve(width);
+    for (int x = 0; x < width; ++x) {
+      _nodes[y].emplace_back(x, y);
     }
   }
+}
+
+Grid::Grid(const Grid &source) : _nodes(source.Height()) {
+  auto width = source.Width();
+  for (int y = 0; y < source.Height(); ++y) {
+    _nodes[y].reserve(width);
+    for (int x = 0; x < width; ++x) {
+      auto source_node{source.GetNode(x, y)};
+      _nodes[y].emplace_back(x, y, source_node->state);
+      _nodes[y][x].g = source_node->g;
+      _nodes[y][x].h = source_node->h;
+    }
+  }
+
+  for (int y = 0; y < source.Height(); ++y) {
+    for (int x = 0; x < width; ++x) {
+      auto source_node_parent{source.GetNode(x, y)->parent};
+      if (source_node_parent != nullptr) {
+        _nodes[y][x].parent = GetNode(source_node_parent->x, source_node_parent->y);
+      }
+    }
+  }
+}
+
+Grid& Grid::operator=(const Grid &source) {
+  if (this == &source) {
+    return *this;
+  }
+
+  _nodes.clear();
+  _nodes.resize(source.Height());
+
+  for (int y = 0; y < source.Height(); ++y) {
+    _nodes[y].clear();
+    for (int x = 0; x < source.Width(); ++x) {
+      _nodes[y].emplace_back(x, y, source.GetNode(x, y)->state);
+      _nodes[y][x].g = source_node->g;
+      _nodes[y][x].h = source_node->h;
+    }
+  }
+
+  for (int y = 0; y < source.Height(); ++y) {
+    for (int x = 0; x < width; ++x) {
+      auto source_node_parent{source.GetNode(x, y)->parent};
+      if (source_node_parent != nullptr) {
+        _nodes[y][x].parent = GetNode(source_node_parent->x, source_node_parent->y);
+      }
+    }
+  }
+
+  return *this;
 }
 
 /*

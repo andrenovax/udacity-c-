@@ -19,7 +19,7 @@ class Grid {
     State state = State::kEmpty;
     Node* parent = nullptr;
 
-    Node(int x, int y): x{x}, y{y} {}
+    Node(int x, int y, state = State::kEmpty): x{x}, y{y}, state{state} {}
 
     bool operator>(Node const& node) const;
     bool operator<(Node const& node) const;
@@ -31,6 +31,9 @@ class Grid {
 
 
   Grid(int width, int height);
+
+  Grid(const Grid &source);
+  Grid& operator=(const Grid &source);
 
   // Getters
   bool IsEmpty(int x, int y);
