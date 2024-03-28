@@ -41,7 +41,7 @@ class Grid {
   Node* GetNode(int x, int y);
   Node* GetNode(SDL_Point &point);
   Node* GetNeighbourNode(Node &node, int neighbour);
-  std::vector<Grid::Node*> GetNeighbourNodes(Grid::Node &node);
+  vector<Grid::Node*> GetNeighbourNodes(Grid::Node &node);
 
   // Setters
   void AddObstacle(int x, int y);
