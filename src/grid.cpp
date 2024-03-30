@@ -16,56 +16,7 @@ Grid::Grid(int width, int height) : _nodes(height) {
   }
 }
 
-Grid::Grid(const Grid &source) : _nodes(source.Height()) {
-  auto width = source.Width();
-  for (int y = 0; y < source.Height(); ++y) {
-    _nodes[y].reserve(width);
-    for (int x = 0; x < width; ++x) {
-      auto source_node{source.GetNode(x, y)};
-      _nodes[y].emplace_back(x, y, source_node->state);
-      _nodes[y][x].g = source_node->g;
-      _nodes[y][x].h = source_node->h;
-    }
-  }
-
-  for (int y = 0; y < source.Height(); ++y) {
-    for (int x = 0; x < width; ++x) {
-      auto source_node_parent{source.GetNode(x, y)->parent};
-      if (source_node_parent != nullptr) {
-        _nodes[y][x].parent = GetNode(source_node_parent->x, source_node_parent->y);
-      }
-    }
-  }
-}
-
-Grid& Grid::operator=(const Grid &source) {
-  if (this == &source) {
-    return *this;
-  }
-
-  _nodes.clear();
-  _nodes.resize(source.Height());
-
-  for (int y = 0; y < source.Height(); ++y) {
-    _nodes[y].clear();
-    for (int x = 0; x < source.Width(); ++x) {
-      _nodes[y].emplace_back(x, y, source.GetNode(x, y)->state);
-      _nodes[y][x].g = source_node->g;
-      _nodes[y][x].h = source_node->h;
-    }
-  }
-
-  for (int y = 0; y < source.Height(); ++y) {
-    for (int x = 0; x < width; ++x) {
-      auto source_node_parent{source.GetNode(x, y)->parent};
-      if (source_node_parent != nullptr) {
-        _nodes[y][x].parent = GetNode(source_node_parent->x, source_node_parent->y);
-      }
-    }
-  }
-
-  return *this;
-}
+Grid::Grid(vector<vector<Node>> nodes) : _nodes(nodes) {}
 
 /*
  * Getters
@@ -116,44 +67,6 @@ bool Grid::IsEmpty(int x, int y) {
 int Grid::Width() const { return _nodes.size(); }
 
 int Grid::Height() const { return _nodes[0].size(); }
-
-/*
- * Mutations
-*/
-
-void Grid::AddObstacle(int x, int y) {
-  GetNode(x, y)->state = Node::State::kObstacle;
-}
-
-void Grid::AddObstacle(SDL_Point &point) {
-  GetNode(point)->state = Node::State::kObstacle;
-}
-
-void Grid::AddObstacle(vector<SDL_Point> &points) {
-  for (auto &point : points) {
-    AddObstacle(point);
-  }
-}
-
-void Grid::Reset(SDL_Point &point) {
-  auto node = GetNode(point);
-  node->g = 0;
-  node->h = std::numeric_limits<int>::max();
-  node->state = Node::State::kEmpty;
-  node->parent = nullptr;
-}
-
-void Grid::Reset(vector<SDL_Point> &points) {
-  for (auto &point : points) {
-    Reset(point);
-  }
-}
-
-void Grid::ReplaceObstacles(vector<SDL_Point> &old_points,
-                            vector<SDL_Point> &new_points) {
-  Reset(old_points);
-  AddObstacle(new_points);
-}
 
 /**
  * Grid::Node

@@ -1,11 +1,13 @@
 #include "gridsearch.h"
 
 #include <algorithm>
-#include <string>
 
 using std::sort;
 using std::array;
 using std::optional;
+
+// copy grid, so we can modify grid here without affecting the main one
+GridSearch(Grid& grid) : _grid{grid} {};
 
 void GridSearch::ExpandNeighbors(Grid::Node *current, Grid::Node *end_node, Nodes &openlist) {
   auto neighbours = _grid.GetNeighbourNodes(*current);
@@ -26,7 +28,7 @@ GridSearch::Nodes GridSearch::MakePath(Grid::Node *current_node, Grid::Node *sta
   Grid::Node *current = current_node;
 
   while (current != start_node) {
-    auto parent = current_node->parent;
+    auto parent = current->parent;
     path_found.push_back(parent);
     current = parent;
   }

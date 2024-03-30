@@ -31,6 +31,7 @@ class Grid {
 
 
   Grid(int width, int height);
+  Grid(vector<vector<Node>> nodes);
 
   Grid(const Grid &source);
   Grid& operator=(const Grid &source);
@@ -43,14 +44,6 @@ class Grid {
   Node* GetNeighbourNode(Node &node, int neighbour);
   vector<Grid::Node*> GetNeighbourNodes(Grid::Node &node);
 
-  // Setters
-  void AddObstacle(int x, int y);
-  void AddObstacle(SDL_Point &point);
-  void AddObstacle(vector<SDL_Point> &points);
-
-  void ReplaceObstacles(vector<SDL_Point> &old_points,
-                        vector<SDL_Point> &new_points);
-
  private:
   vector<vector<Node>> _nodes;
 
@@ -59,10 +52,6 @@ class Grid {
   // Getters
   int Width() const;
   int Height() const;
-
-  // Setters
-  void Reset(SDL_Point &point);
-  void Reset(vector<SDL_Point> &points);
 };
 
 #endif

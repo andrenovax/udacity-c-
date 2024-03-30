@@ -44,7 +44,7 @@ int Worm::Id() const { return _id; }
  */
 
 optional<XY_Coords> Worm::FindNext(SDL_Point& goal) {
-  GridSearch grid_search(_grid);
+  GridSearch grid_search( _grid->MakeSearchGrid());
 
   return grid_search.FindNext(GetHead(), {goal.x, goal.y});
 }

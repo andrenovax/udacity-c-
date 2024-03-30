@@ -16,14 +16,13 @@ class GridSearch {
   typedef vector<Grid::Node*> Nodes;
   typedef array<int, 2> XY_Coords;
 
-  // copy grid, so we can modify grid here without affecting the main one
-  GridSearch(Grid grid) : _grid{grid} {};
+  GridSearch(Grid& grid);
 
   optional<XY_Coords> FindNext(XY_Coords init, XY_Coords goal);
   optional<Nodes> AStarSearch(XY_Coords init, XY_Coords goal);
 
  private:
-  Grid _grid;
+  Grid& _grid;
 
   static Nodes MakePath(Grid::Node *current_node, Grid::Node *start_node);
 
