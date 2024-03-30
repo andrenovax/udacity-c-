@@ -86,5 +86,7 @@ void Snake::Cut(std::array<int, 2> xy) {
     return item.x == xy[0] && item.y == xy[1];
   });
 
-  body.erase(item, body.end());
+  if (item != body.end()) {
+    body.erase(body.begin(), std::next(item));
+  }
 }
