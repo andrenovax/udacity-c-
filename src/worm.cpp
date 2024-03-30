@@ -53,7 +53,7 @@ optional<XY_Coords> Worm::FindNext(SDL_Point& goal) {
  * Mutations
  */
 
-void Worm::Update(SDL_Point& goal) {
+void Worm::Update(SDL_Point& goal, bool reverse_if_no_next = true) {
   auto next_cell_optional = FindNext(goal);
 
   if (next_cell_optional.has_value()) {
@@ -71,6 +71,9 @@ void Worm::Update(SDL_Point& goal) {
     } else {
       _growing = false;
     }
+  } else if (reverse_if_no_next) {
+    std::reverse(body);
+    Update(goal, false);
   }
 }
 
