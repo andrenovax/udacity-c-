@@ -1,40 +1,51 @@
 #ifndef WORM_H
 #define WORM_H
 
-#include <vector>
 #include <array>
 #include <optional>
+#include <vector>
 
 #include "SDL.h"
+#include "grid2d.h"
+#include "wormgrid.h"
+
+using std::optional;
+using std::vector;
 
 typedef std::array<int, 2> XY_Coords;
 
 class Worm {
  public:
-  Worm(int x, int y);
+  Worm(int x, int y, WormGrid* grid);
+  Worm(vector<SDL_Point> body, WormGrid* grid);
 
   Worm(Worm &&source) noexcept;
+  Worm& operator=(Worm &&source) noexcept;
 
   // attributes
-  std::vector<SDL_Point> body;
+  vector<SDL_Point> body;
 
   // getters
-  bool IsWormCell(int x, int y) const;
+  int Id() const;
   bool IsWormHead(int x, int y) const;
   bool IsDead() const;
-  array<int, 2> GetHead() const;
+  XY_Coords GetHead() const;
 
   // mutations
-  void Move(int x, int y);
-  void Move(const array<int, 2> xy);
-  void Grow(int x, int y);
-  void Grow(const array<int, 2> xy);
+  void Grow();
+  void Update(SDL_Point& goal);
 
-  std::optional<Worm> Bitten(int x, int y);
+  optional<vector<SDL_Point>> Bitten(int x, int y);
 
+  optional<XY_Coords> FindNext(SDL_Point& goal);
 
  private:
-  Worm(std::vector<SDL_Point> body) : body(std::move(body)) {}
+  static int id;
+
+  // attributes
+  int _id;
+  WormGrid* _grid;
+  bool _growing = false;
 };
 
 #endif

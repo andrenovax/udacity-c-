@@ -59,7 +59,7 @@ void Game::PlaceFood() {
     y = random_h(engine);
     // Check that the location is not occupied by a snake or worm item before placing
     // food.
-    if (!snake.SnakeCell(x, y) && !worms.HasWorm(x, y)) {
+    if (!snake.SnakeCell(x, y) && !worms.IsWormCell(x, y)) {
       food.x = x;
       food.y = y;
       return;
@@ -98,7 +98,8 @@ void Game::Update() {
     snake.speed += 0.02;
   }
 
-  worms.Update(new_x, new_y);
+  worms.Update();
+  worms.UpdateIfBitten(bitten_x, bitten_y);
 
   for (auto &[id, worm] : worms.items) {
     if (worm.IsWormHead(food.x, food.y)) {
