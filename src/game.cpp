@@ -6,8 +6,10 @@ Game::Game(std::size_t grid_width, std::size_t grid_height)
     : snake(grid_width, grid_height),
       engine(dev()),
       random_w(0, static_cast<int>(grid_width - 1)),
-      random_h(0, static_cast<int>(grid_height - 1)) {
+      random_h(0, static_cast<int>(grid_height - 1)),
+      worms(grid_width, grid_height) {
   PlaceFood();
+  PlaceWorm();
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -55,11 +57,25 @@ void Game::PlaceFood() {
   while (true) {
     x = random_w(engine);
     y = random_h(engine);
-    // Check that the location is not occupied by a snake item before placing
+    // Check that the location is not occupied by a snake or worm item before placing
     // food.
-    if (!snake.SnakeCell(x, y)) {
+    if (!snake.SnakeCell(x, y) && !worms.HasWorm(x, y)) {
       food.x = x;
       food.y = y;
+      return;
+    }
+  }
+}
+
+void Game::PlaceWorm() {
+  int x, y;
+  while (true) {
+    x = random_w(engine);
+    y = random_h(engine);
+    // Check that the location is not occupied by a snake item before placing
+    // food.
+    if (!snake.SnakeCell(x, y) && (food.x != x || food.y != y)) {
+      worms.AddWorm(x, y);
       return;
     }
   }
@@ -80,6 +96,22 @@ void Game::Update() {
     // Grow snake and increase speed.
     snake.GrowBody();
     snake.speed += 0.02;
+  }
+
+  worms.Update(new_x, new_y);
+
+  for (auto &[id, worm] : worms.items) {
+    if (worm.IsWormHead(food.x, food.y)) {
+      PlaceFood();
+      worm.Grow();
+    } else if (snake.SnakeCell(worm.GetHead())) {
+      snake.Cut(worm.GetHead());
+      worm.Grow();
+    }
+  }
+
+  if (worms.IsEmpty()) {
+    PlaceWorm();
   }
 }
 
