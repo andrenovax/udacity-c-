@@ -98,15 +98,15 @@ void Game::Update() {
     snake.speed += 0.02;
   }
 
-  worms.Update(food);
+  bool has_eaten_food = worms.UpdatePositionsToTarget(food);
   worms.UpdateIfBitten(new_x, new_y);
 
+  if (has_eaten_food) {
+    PlaceFood();
+  }
+
   for (auto &[id, worm] : worms.items) {
-    if (worm->IsWormHead(food.x, food.y)) {
-      PlaceFood();
-      worm->Grow();
-      worm->speed += 0.01;
-    } else if (snake.SnakeCell(worm->GetHead())) {
+    if (snake.SnakeCell(worm->GetHead())) {
       snake.Cut(worm->GetHead());
       worm->Grow();
       worm->speed += 0.01;

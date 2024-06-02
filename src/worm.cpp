@@ -75,7 +75,7 @@ optional<XY_Coords> Worm::FindNext(SDL_Point& goal) {
  * Mutations
  */
 
-void Worm::Update(SDL_Point& goal) {
+void Worm::Update(SDL_Point& goal, std::shared_ptr<std::atomic<bool>> has_reached_goal) {
   cells_to_move += speed;
   int number_of_steps = std::floor(cells_to_move);
   if (number_of_steps == 0) {
@@ -85,6 +85,9 @@ void Worm::Update(SDL_Point& goal) {
   cells_to_move -= number_of_steps;
 
   for (int i = 0; i < number_of_steps; ++i) {
+    if (has_reached_goal->load()) {
+      return;
+    }
     auto next_cell_optional = FindNext(goal);
 
     if (!next_cell_optional.has_value()) {
@@ -107,6 +110,15 @@ void Worm::Update(SDL_Point& goal) {
         body.erase(body_begin);
       } else {
         _growing = false;
+      }
+      // high speed eating mode
+      if (IsWormHead(goal.x, goal.y)) {
+        if (!has_reached_goal->load()) {
+          has_reached_goal->store(true);
+          Grow();
+          speed += 0.01;
+        }
+        return;
       }
     }
   }

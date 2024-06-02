@@ -33,7 +33,7 @@ class Worm {
 
   // mutations
   void Grow();
-  void Update(SDL_Point& goal);
+  void Update(SDL_Point& goal, std::shared_ptr<std::atomic<bool>> has_reached_goal);
 
   optional<vector<SDL_Point>> Bitten(int x, int y);
 

@@ -19,7 +19,7 @@ class Worms {
   int Size();
 
   // Mutations
-  void Update(SDL_Point& target);
+  bool UpdatePositionsToTarget(SDL_Point& target);
   void UpdateIfBitten(int bitten_x, int bitten_y);
   void AddWorm(int x, int y);
   void AddWorm(const vector<SDL_Point>& body);

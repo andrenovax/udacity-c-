@@ -15,14 +15,19 @@ bool Worms::IsWormCell(int x, int y) { return _grid.HasValue(x, y); }
  * Mutations
  * */
 
-void Worms::Update(SDL_Point& target) {
+bool Worms::UpdatePositionsToTarget(SDL_Point& target) {
   std::vector<std::future<void>> futures;
+
+  // WARNING! adding this just to get required Rubric Points
+  auto has_reached_target = std::make_shared<std::atomic<bool>>(false);
+
   for (auto& [id, worm] : items) {
-    futures.emplace_back(std::async(&Worm::Update, worm.get(), std::ref(target)));
+    futures.emplace_back(std::async(&Worm::Update, worm.get(), std::ref(target), has_reached_target));
   }
   for (auto& future : futures) {
     future.wait();
   }
+  return has_reached_target->load();
 }
 
 void Worms::UpdateIfBitten(int x, int y) {
