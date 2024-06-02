@@ -1,6 +1,6 @@
 #include "game.h"
-#include <iostream>
 #include "SDL.h"
+#include "worm.h"
 
 Game::Game(std::size_t grid_width, std::size_t grid_height)
     : snake(grid_width, grid_height),
@@ -27,7 +27,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(snake, food);
+    renderer.Render(snake, food, worms);
 
     frame_end = SDL_GetTicks();
 
@@ -57,8 +57,8 @@ void Game::PlaceFood() {
   while (true) {
     x = random_w(engine);
     y = random_h(engine);
-    // Check that the location is not occupied by a snake or worm item before placing
-    // food.
+    // Check that the location is not occupied by a snake or worm item before
+    // placing food.
     if (!snake.SnakeCell(x, y) && !worms.IsWormCell(x, y)) {
       food.x = x;
       food.y = y;
@@ -98,23 +98,29 @@ void Game::Update() {
     snake.speed += 0.02;
   }
 
-  worms.Update();
-  worms.UpdateIfBitten(bitten_x, bitten_y);
+  worms.Update(food);
+  worms.UpdateIfBitten(new_x, new_y);
 
   for (auto &[id, worm] : worms.items) {
-    if (worm.IsWormHead(food.x, food.y)) {
+    if (worm->IsWormHead(food.x, food.y)) {
       PlaceFood();
-      worm.Grow();
-    } else if (snake.SnakeCell(worm.GetHead())) {
-      snake.Cut(worm.GetHead());
-      worm.Grow();
+      worm->Grow();
+      worm->speed += 0.01;
+    } else if (snake.SnakeCell(worm->GetHead())) {
+      snake.Cut(worm->GetHead());
+      worm->Grow();
+      worm->speed += 0.01;
     }
   }
 
-  if (worms.IsEmpty()) {
+  if (GetMinWorms() > worms.Size()) {
     PlaceWorm();
   }
 }
 
 int Game::GetScore() const { return score; }
 int Game::GetSize() const { return snake.size; }
+
+int Game::GetMinWorms() {
+  return std::ceil(static_cast<double>(score + 1) / 10.0);
+}

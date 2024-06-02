@@ -1,4 +1,5 @@
 #include "worms.h"
+#include <future>
 
 Worms::Worms(int x_length, int y_length) : _grid(x_length, y_length) {}
 
@@ -6,21 +7,21 @@ Worms::Worms(int x_length, int y_length) : _grid(x_length, y_length) {}
  * Getters
  * */
 
-bool Worms::IsEmpty() {
-  return items.empty();
-}
+bool Worms::IsEmpty() { return items.empty(); }
 
-bool Worms::IsWormCell(int x, int y) {
-  return _grid.HasValue(x, y);
-}
+bool Worms::IsWormCell(int x, int y) { return _grid.HasValue(x, y); }
 
 /*
  * Mutations
  * */
 
 void Worms::Update(SDL_Point& target) {
-  for (auto &[id, worm] : items) {
-    worm->Update(target);
+  std::vector<std::future<void>> futures;
+  for (auto& [id, worm] : items) {
+    futures.emplace_back(std::async(&Worm::Update, worm.get(), std::ref(target)));
+  }
+  for (auto& future : futures) {
+    future.wait();
   }
 }
 
@@ -32,18 +33,22 @@ void Worms::UpdateIfBitten(int x, int y) {
     if (new_worm_body.has_value()) {
       AddWorm(new_worm_body.value());
     }
-    if (worm->isDead()) {
+    if (worm->IsDead()) {
       items.erase(worm->Id());
     }
   }
 }
 
 void Worms::AddWorm(int x, int y) {
-  auto worm = std::make_unique<Worm>(x, y, _grid);
+  auto worm = std::make_unique<Worm>(x, y, &_grid);
   items[worm->Id()] = std::move(worm);
 }
 
 void Worms::AddWorm(const vector<SDL_Point>& body) {
-  auto worm = std::make_unique<Worm>(body, _grid);
+  auto worm = std::make_unique<Worm>(body, &_grid);
   items[worm->Id()] = std::move(worm);
+}
+
+int Worms::Size() {
+  return items.size();
 }

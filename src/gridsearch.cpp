@@ -2,14 +2,15 @@
 
 #include <algorithm>
 
-using std::sort;
 using std::array;
 using std::optional;
+using std::sort;
 
 // copy grid, so we can modify grid here without affecting the main one
-GridSearch(Grid& grid) : _grid{grid} {};
+GridSearch::GridSearch(Grid &grid) : _grid{grid} {};
 
-void GridSearch::ExpandNeighbors(Grid::Node *current, Grid::Node *end_node, Nodes &openlist) {
+void GridSearch::ExpandNeighbors(Grid::Node *current, Grid::Node *end_node,
+                                 Nodes &openlist) {
   auto neighbours = _grid.GetNeighbourNodes(*current);
   for (auto &neighbour : neighbours) {
     if (neighbour->IsEmpty()) {
@@ -22,7 +23,8 @@ void GridSearch::ExpandNeighbors(Grid::Node *current, Grid::Node *end_node, Node
   }
 }
 
-GridSearch::Nodes GridSearch::MakePath(Grid::Node *current_node, Grid::Node *start_node) {
+GridSearch::Nodes GridSearch::MakePath(Grid::Node *current_node,
+                                       Grid::Node *start_node) {
   Nodes path_found{current_node};
 
   Grid::Node *current = current_node;
@@ -38,7 +40,8 @@ GridSearch::Nodes GridSearch::MakePath(Grid::Node *current_node, Grid::Node *sta
   return path_found;
 }
 
-optional<GridSearch::Nodes> GridSearch::AStarSearch(XY_Coords init, XY_Coords goal) {
+optional<GridSearch::Nodes> GridSearch::AStarSearch(XY_Coords init,
+                                                    XY_Coords goal) {
   auto end_node{_grid.GetNode(goal[0], goal[1])};
   auto start_node{_grid.GetNode(init[0], init[1])};
   start_node->g = 0;
@@ -48,9 +51,11 @@ optional<GridSearch::Nodes> GridSearch::AStarSearch(XY_Coords init, XY_Coords go
 
   while (open.size() > 0) {
     // Get the next node
-    sort(open.begin(), open.end());
-    auto next_node = open.back();
-    open.pop_back();
+    sort(open.begin(), open.end(), [](auto &first, auto &second) {
+      return first->FValue() < second->FValue();
+    });
+    auto next_node = open[0];
+    open.erase(open.begin());
 
     if (next_node == end_node) {
       return MakePath(next_node, start_node);
@@ -58,9 +63,11 @@ optional<GridSearch::Nodes> GridSearch::AStarSearch(XY_Coords init, XY_Coords go
 
     ExpandNeighbors(next_node, end_node, open);
   }
+  return std::nullopt;
 }
 
-optional<GridSearch::XY_Coords> GridSearch::FindNext(XY_Coords init, XY_Coords goal) {
+optional<GridSearch::XY_Coords> GridSearch::FindNext(XY_Coords init,
+                                                     XY_Coords goal) {
   auto path = AStarSearch(init, goal);
   if (path.has_value()) {
     auto path_value = path.value();
@@ -69,4 +76,5 @@ optional<GridSearch::XY_Coords> GridSearch::FindNext(XY_Coords init, XY_Coords g
       return optional<XY_Coords>{{next_node->x, next_node->y}};
     }
   }
+  return std::nullopt;
 }

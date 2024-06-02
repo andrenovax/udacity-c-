@@ -1,19 +1,24 @@
 #include "worm.h"
+#include <algorithm>
 #include "gridsearch.h"
+#include <cmath>
 
 int Worm::id = 0;
 
-Worm::Worm(int x, int y, WormGrid* grid) : body({SDL_Point{x, y}}), _grid(grid) {
+Worm::Worm(int x, int y, Grid2D<Worm*>* grid)
+    : body({SDL_Point{x, y}}), _grid(grid) {
   id++;
   _id = id;
   _grid->Add(x, y, this);
 }
 
-Worm::Worm(vector<SDL_Point> body, WormGrid* grid) : body(std::move(body)), _grid{grid}, _id(++id) {}
+Worm::Worm(vector<SDL_Point> body, Grid2D<Worm*>* grid)
+    : body(std::move(body)), _grid{grid}, _id(++id) {}
 
-Worm::Worm(Worm &&source) noexcept : body(std::move(source.body)), _grid(source._grid), _id(source._id) {}
+Worm::Worm(Worm&& source) noexcept
+    : body(std::move(source.body)), _grid(source._grid), _id(source._id) {}
 
-Worm& Worm::operator=(Worm &&source) noexcept {
+Worm& Worm::operator=(Worm&& source) noexcept {
   if (this != &source) {
     body = std::move(source.body);
     _grid = source._grid;
@@ -43,8 +48,25 @@ int Worm::Id() const { return _id; }
  * Helpers
  */
 
+Grid MakeSearchNodes(Grid2D<Worm*>* _grid) {
+  auto& items = _grid->_items;
+  vector<vector<Grid::Node>> nodes(items.size(),
+                                   vector<Grid::Node>(items[0].size()));
+
+  for (int y = 0; y < items.size(); ++y) {
+    for (int x = 0; x < items[0].size(); ++x) {
+      auto state = items[y][x].has_value() ? Grid::Node::State::kObstacle
+                                           : Grid::Node::State::kEmpty;
+      nodes[y][x] = Grid::Node(x, y, state);
+    }
+  }
+
+  return Grid(nodes);
+}
+
 optional<XY_Coords> Worm::FindNext(SDL_Point& goal) {
-  GridSearch grid_search( _grid->MakeSearchGrid());
+  Grid temp_grid = MakeSearchNodes(_grid);
+  GridSearch grid_search(temp_grid);
 
   return grid_search.FindNext(GetHead(), {goal.x, goal.y});
 }
@@ -53,27 +75,40 @@ optional<XY_Coords> Worm::FindNext(SDL_Point& goal) {
  * Mutations
  */
 
-void Worm::Update(SDL_Point& goal, bool reverse_if_no_next = true) {
-  auto next_cell_optional = FindNext(goal);
+void Worm::Update(SDL_Point& goal) {
+  cells_to_move += speed;
+  int number_of_steps = std::floor(cells_to_move);
+  if (number_of_steps == 0) {
+    return;
+  }
 
-  if (next_cell_optional.has_value()) {
-    SDL_Point next_cell{next_cell_optional.value()};
+  cells_to_move -= number_of_steps;
 
-    _grid->Add(next_cell.x, next_cell.y, this);
+  for (int i = 0; i < number_of_steps; ++i) {
+    auto next_cell_optional = FindNext(goal);
 
-    body.push_back(next_cell);
-
-    if (!_growing) {
-      auto body_begin{body.begin()};
-      _grid->Remove((*body_begin).x, (*body_begin).y);
-      // Remove the tail from the vector.
-      body.erase(body_begin);
-    } else {
-      _growing = false;
+    if (!next_cell_optional.has_value()) {
+      std::reverse(body.begin(), body.end());
+      next_cell_optional = FindNext(goal);
     }
-  } else if (reverse_if_no_next) {
-    std::reverse(body);
-    Update(goal, false);
+
+    if (next_cell_optional.has_value()) {
+      auto& val{next_cell_optional.value()};
+      SDL_Point next_cell{val[0], val[1]};
+
+      _grid->Add(next_cell.x, next_cell.y, this);
+
+      body.push_back(next_cell);
+
+      if (!_growing) {
+        auto body_begin{body.begin()};
+        _grid->Remove(body_begin->x, body_begin->y);
+        // Remove the tail from the vector.
+        body.erase(body_begin);
+      } else {
+        _growing = false;
+      }
+    }
   }
 }
 
@@ -96,7 +131,7 @@ optional<vector<SDL_Point>> Worm::Bitten(int x, int y) {
   } else if (item != body.end()) {
     vector<SDL_Point> new_worm_body{item + 1, body.end()};
     body.erase(item, body.end());
-    std::reverse(body);
+    std::reverse(body.begin(), body.end());
 
     return new_worm_body;
   }

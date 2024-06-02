@@ -31,6 +31,7 @@ class Game {
   void PlaceFood();
   void PlaceWorm();
   void Update();
+  int GetMinWorms();
 };
 
 #endif

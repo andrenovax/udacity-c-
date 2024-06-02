@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-#include "wormgrid.h"
+#include "grid2d.h"
 #include "worm.h"
 
 class Worms {
@@ -16,6 +16,7 @@ class Worms {
   // Getters
   bool IsEmpty();
   bool IsWormCell(int x, int y);
+  int Size();
 
   // Mutations
   void Update(SDL_Point& target);
@@ -24,8 +25,7 @@ class Worms {
   void AddWorm(const vector<SDL_Point>& body);
 
  private:
-  WormGrid _grid;
-
+  Grid2D<Worm*> _grid;
 };
 
 #endif

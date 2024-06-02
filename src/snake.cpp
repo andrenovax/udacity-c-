@@ -1,6 +1,6 @@
 #include "snake.h"
-#include <cmath>
 #include <array>
+#include <cmath>
 
 void Snake::Update() {
   SDL_Point prev_cell{
@@ -79,7 +79,9 @@ bool Snake::SnakeCell(int x, int y) {
   return false;
 }
 
-bool Snake::SnakeCell(std::array<int, 2> xy) { return Snake::SnakeCell(xy[0], xy[1]); }
+bool Snake::SnakeCell(std::array<int, 2> xy) {
+  return Snake::SnakeCell(xy[0], xy[1]);
+}
 
 void Snake::Cut(std::array<int, 2> xy) {
   auto item = std::find_if(body.begin(), body.end(), [xy](const auto &item) {

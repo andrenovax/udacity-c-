@@ -7,7 +7,6 @@
 
 #include "SDL.h"
 #include "grid2d.h"
-#include "wormgrid.h"
 
 using std::optional;
 using std::vector;
@@ -16,13 +15,14 @@ typedef std::array<int, 2> XY_Coords;
 
 class Worm {
  public:
-  Worm(int x, int y, WormGrid* grid);
-  Worm(vector<SDL_Point> body, WormGrid* grid);
+  Worm(int x, int y, Grid2D<Worm*>* grid);
+  Worm(vector<SDL_Point> body, Grid2D<Worm*>* grid);
 
-  Worm(Worm &&source) noexcept;
-  Worm& operator=(Worm &&source) noexcept;
+  Worm(Worm&& source) noexcept;
+  Worm& operator=(Worm&& source) noexcept;
 
   // attributes
+  float speed{0.1};
   vector<SDL_Point> body;
 
   // getters
@@ -41,10 +41,11 @@ class Worm {
 
  private:
   static int id;
+  float cells_to_move{0};
 
   // attributes
   int _id;
-  WormGrid* _grid;
+  Grid2D<Worm*>* _grid;
   bool _growing = false;
 };
 
