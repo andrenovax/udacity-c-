@@ -31,10 +31,12 @@ bool Worms::UpdatePositionsToTarget(SDL_Point& target) {
 }
 
 void Worms::UpdateIfBitten(int x, int y) {
+  // check if the grid cell has a worm at the specified coordinates
   auto worm_optional = _grid.Get(x, y);
   if (worm_optional.has_value()) {
     auto worm = worm_optional.value();
     auto new_worm_body = worm->Bitten(x, y);
+    // if worm was bitten in the middle add new worm
     if (new_worm_body.has_value()) {
       AddWorm(new_worm_body.value());
     }

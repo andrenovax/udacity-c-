@@ -48,6 +48,7 @@ int Worm::Id() const { return _id; }
  * Helpers
  */
 
+// create a grid to find the next step
 Grid MakeSearchNodes(Grid2D<Worm*>* _grid) {
   auto& items = _grid->_items;
   vector<vector<Grid::Node>> nodes(items.size(),
@@ -85,11 +86,15 @@ void Worm::Update(SDL_Point& goal, std::shared_ptr<std::atomic<bool>> has_reache
   cells_to_move -= number_of_steps;
 
   for (int i = 0; i < number_of_steps; ++i) {
+    // if this or other worm has already reached the goal, stop looking after the food
     if (has_reached_goal->load()) {
       return;
     }
+
+    // find the next optimal cell
     auto next_cell_optional = FindNext(goal);
 
+    // find no place to go, look in the opposite direction
     if (!next_cell_optional.has_value()) {
       std::reverse(body.begin(), body.end());
       next_cell_optional = FindNext(goal);
@@ -111,7 +116,7 @@ void Worm::Update(SDL_Point& goal, std::shared_ptr<std::atomic<bool>> has_reache
       } else {
         _growing = false;
       }
-      // high speed eating mode
+      // if next is right in the goal, notify the others, grow and speed up
       if (IsWormHead(goal.x, goal.y)) {
         if (!has_reached_goal->load()) {
           has_reached_goal->store(true);
@@ -133,13 +138,16 @@ optional<vector<SDL_Point>> Worm::Bitten(int x, int y) {
     return item.x == x && item.y == y;
   });
 
+  // worm was bitten at the end
   if (item == body.begin()) {
     body.erase(body.begin());
+  // worm was bitten at the head - run in the opposite direction!
   } else if (item + 1 == body.end()) {
     body.pop_back();
     if (!body.empty()) {
       std::reverse(body.begin(), body.end());
     }
+  // worm was bitten in the middle - split
   } else if (item != body.end()) {
     vector<SDL_Point> new_worm_body{item + 1, body.end()};
     body.erase(item, body.end());
